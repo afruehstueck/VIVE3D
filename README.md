@@ -34,7 +34,6 @@ First, we invert a selected few frames into the latent space of a pretrained EG3
 # inverts the selected faces into the EG3D latent space and fine-tunes to create personalized Generator
 python personalize_generator.py --source_video path/to/video \
 --generator_path 'models/ffhqrebalanced512-128.pkl' \
---device 'cuda:0' \
 --output_intermediate \
 --start_sec FRAME_SECOND \
 --end_sec FRAME_SECOND \
@@ -54,6 +53,7 @@ python invert_video.py --savepoint_path path/to/savepoints \
 ```
 
 We can now use the stack of inverted latents and angles to edit the appearance of our subject, and change the head's angle.
+We provide some InterfaceGAN editing boundaries [here](TODO), please copy them to the `boundaries` folder in the project folder.
 ```
 python edit_video.py --savepoint_path path/to/savepoints \
 --source_video path/to/video \
