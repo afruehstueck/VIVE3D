@@ -53,7 +53,7 @@ python invert_video.py --savepoint_path path/to/savepoints \
 ```
 
 We can now use the stack of inverted latents and angles to edit the appearance of our subject, and change the head's angle.
-We provide some InterfaceGAN editing boundaries [here](TODO), please copy them to the `boundaries` folder in the project folder.
+We provide some InterfaceGAN editing boundaries [here](https://drive.google.com/file/d/1QM9691qBP-Trw3XrEb_CcEx3dEDKmWrE), please copy them to the `boundaries` folder in the project directory.
 ```
 python edit_video.py --savepoint_path path/to/savepoints \
 --source_video path/to/video \

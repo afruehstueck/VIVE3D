@@ -152,7 +152,7 @@ def _main(savepoint_path,
     angle_prefix = ''
     angle_prefix += f'_y={yaw}' if yaw != 'o' else ''
     angle_prefix += f'_p={pitch}' if pitch != 'o' else ''
-    fname = f'{vid.get_video_title()}_inset{angle_prefix}{boundary_str}'
+    fname = f'{vid.get_video_title()}_inset{angle_prefix}{edit_description}'
     vid.write_frames_to_video(output_inset, f'{video_output_path}/{fname}')
 
 #     tuned_generator_path = f'{savepoint_path}/G_tune.pkl'
