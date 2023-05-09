@@ -288,33 +288,34 @@ class Pipeline:
             
             self.use_ball_holder = i % self.locality_regularization_interval == 0
             
-            if i % image_log_step == 0:
-                log = []
-                
-                raw_256 = F.interpolate(generated['image_raw'], size=(256, 256), mode='nearest')
-                for idx in range(len(target_images)):
-                    log_image = generated['image'][idx].unsqueeze(0)
-                    depth_image = self.normalize_depth(generated['image_depth'][idx], resize=256)
-                    dr = torch.cat((depth_image, raw_256[idx].unsqueeze(0)), axis=-1)
-                    log.append(torch.cat((target_images[idx].unsqueeze(0), log_image, dr), axis=-2))
-                
-                #add default person
-                if output_progress_frames:
-                    default_person = self.generator.generate(w_latent, yaws_circle[i%frames_per_rot], pitches_circle[i%frames_per_rot], output_all=True, grad=False)
-                else:
-                    default_person = self.generator.generate(w_latent, 0.0, 0.0, output_all=True, grad=False)
-                log_image = default_person['image']
-                depth_image = self.normalize_depth(default_person['image_depth'], resize=512)
-        
-                log.append(torch.cat((log_image, depth_image, torch.zeros_like(dr)), axis=-2))
-                
-                Visualizer.show_tensor(torch.cat(log, axis=-1), ax=ax)
-                   
-                fig.canvas.draw()
-                hfig.update(fig)
-                if output_progress_frames:
-                    progress_images.append(tensor_to_image(torch.cat(log, axis=-1)))
-            plt.close(fig)
+            if plot_progress:
+                if i % image_log_step == 0:
+                    log = []
+
+                    raw_256 = F.interpolate(generated['image_raw'], size=(256, 256), mode='nearest')
+                    for idx in range(len(target_images)):
+                        log_image = generated['image'][idx].unsqueeze(0)
+                        depth_image = self.normalize_depth(generated['image_depth'][idx], resize=256)
+                        dr = torch.cat((depth_image, raw_256[idx].unsqueeze(0)), axis=-1)
+                        log.append(torch.cat((target_images[idx].unsqueeze(0), log_image, dr), axis=-2))
+
+                    #add default person
+                    if output_progress_frames:
+                        default_person = self.generator.generate(w_latent, yaws_circle[i%frames_per_rot], pitches_circle[i%frames_per_rot], output_all=True, grad=False)
+                    else:
+                        default_person = self.generator.generate(w_latent, 0.0, 0.0, output_all=True, grad=False)
+                    log_image = default_person['image']
+                    depth_image = self.normalize_depth(default_person['image_depth'], resize=512)
+
+                    log.append(torch.cat((log_image, depth_image, torch.zeros_like(dr)), axis=-2))
+
+                    Visualizer.show_tensor(torch.cat(log, axis=-1), ax=ax)
+
+                    fig.canvas.draw()
+                    hfig.update(fig)
+                    if output_progress_frames:
+                        progress_images.append(tensor_to_image(torch.cat(log, axis=-1)))
+                plt.close(fig)
         if output_progress_frames:
             return progress_images
     
@@ -814,7 +815,8 @@ class Pipeline:
         estimated_yaw_video = []
         estimated_pitch_video = [] 
             
-        for idx in range(num_frames): 
+        pbar = tqdm(range(num_frames))
+        for idx in pbar: 
             target_image = input_images[idx].unsqueeze(0).clone().to(self.device)
             target_image_128 = self.downsampler_128(target_image)
     
@@ -855,8 +857,8 @@ class Pipeline:
             y_opt_frame = torch.tensor(start_y, dtype=torch.float32, device=self.device, requires_grad=True)
             p_opt_frame = torch.tensor(start_p, dtype=torch.float32, device=self.device, requires_grad=True)
             optimizer = torch.optim.Adam([w_offset_opt] + [y_opt_frame] + [p_opt_frame], betas=(0.9, 0.999), lr=learning_rate)
-            pbar = tqdm(range(steps))
-            for step in pbar:
+            
+            for step in range(steps):
                 ws = w_person.repeat([1, self.generator.get_num_ws(), 1]) + w_offset_opt
                 out = self.generator.generate(ws, y_opt_frame, p_opt_frame, output_all=True, grad=True)
                 synth_image_128 = out['image_raw']

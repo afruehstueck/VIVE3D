@@ -8,15 +8,18 @@ import copy
 import torch.nn.functional as F
 
 class EG3D_Generator: 
-    def __init__(self, network_pkl, device='cuda'):
+    def __init__(self, network_pkl, device='cuda', load_tuned=False):
         self.device=device
         
-        with dnnlib.util.open_url(network_pkl) as f:
-            self.G = legacy.load_network_pkl(f)['G_ema'].eval().to(self.device)
-        
-        self.G_tune = None
-        self.active_G = self.G
-        
+        if not load_tuned:
+            with dnnlib.util.open_url(network_pkl) as f:
+                self.G = legacy.load_network_pkl(f)['G_ema'].eval().to(self.device)
+            self.G_tune = None
+            self.active_G = self.G
+        else:
+            self.G = None
+            self.load_tuned(network_pkl)
+            
         self.set_camera_parameters()
         self.evaluate_average_w()
         self.BS = 8
@@ -46,7 +49,7 @@ class EG3D_Generator:
         self.focal_length = focal_length
         self.intrinsics = torch.tensor([[focal_length, 0, 0.5], [0, focal_length, 0.5], [0, 0, 1]], device=self.device)
         self.cam_pivot = torch.tensor(cam_pivot, device=self.device)
-        self.cam_radius = self.G.rendering_kwargs.get('avg_camera_radius', 2.7)
+        self.cam_radius = self.active_G.rendering_kwargs.get('avg_camera_radius', 2.7)
         self.conditioning_cam2world_pose = LookAtPoseSampler.sample(np.pi/2, np.pi/2, self.cam_pivot, radius=self.cam_radius, device=self.device)
         self.conditioning_params = torch.cat([self.conditioning_cam2world_pose.reshape(-1, 16), self.intrinsics.reshape(-1, 9)], 1)
         
@@ -55,9 +58,9 @@ class EG3D_Generator:
         truncation_cutoff = 14
 
         with torch.no_grad():
-            z_samples = np.random.RandomState(123).randn(num_samples, self.G.z_dim)
+            z_samples = np.random.RandomState(123).randn(num_samples, self.active_G.z_dim)
 
-            w_samples = self.G.mapping(torch.from_numpy(z_samples).to(self.device), self.conditioning_params.repeat(num_samples, 1), truncation_psi=truncation_psi, truncation_cutoff=truncation_cutoff)   
+            w_samples = self.active_G.mapping(torch.from_numpy(z_samples).to(self.device), self.conditioning_params.repeat(num_samples, 1), truncation_psi=truncation_psi, truncation_cutoff=truncation_cutoff)   
 
             w_samples = w_samples[:, :1, :].cpu().numpy().astype(np.float32)  # [N, 1, C] #
             w_avg = np.mean(w_samples, axis=0, keepdims=True)  # [1, 1, C]
