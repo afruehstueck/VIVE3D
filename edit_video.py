@@ -101,7 +101,7 @@ def _main(savepoint_path,
     w_default = editor.edit(w_person, 'default', 0.0, w_offsets_video)
     w_modify = editor.multi_edit(w_person, edit, w_offsets_video)
     face_edited = generator.generate(w_modify, yaws_video, pitches_video)
-    #vid.write_frames_to_video(tensor_to_image(face_edited), f'{video_output_path}/{vid.get_video_title()}_{start_sec}-{end_sec}{edit_description}_face')
+    vid.write_frames_to_video(tensor_to_image(face_edited), f'{video_output_path}/{vid.get_video_title()}_{start_sec}-{end_sec}{edit_description}_face')
 
     use_video_flow = (yaw is not None) or (pitch is not None)        
     
