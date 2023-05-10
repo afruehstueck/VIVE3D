@@ -24,7 +24,7 @@ from vive3D.config import *
 @click.option('--resize_video', type=int, default=1)
 @click.option('--focal_length', type=float, help='Generator Focal Length', default=3.6)
 @click.option('--camera_position', type=(float, float, float), nargs=3, help='Generator Camera Position', default=(0, 0.05, 0.2))
-@click.option('--loss_threshold', type=float, default=0.5, help='Early stopping threshold for inversion. Empirically selected per video.')
+@click.option('--loss_threshold', type=float, default=0.2, help='Early stopping threshold for inversion. Empirically selected per video.')
 @click.option('-d', '--device', type=str, help='GPU device that should be used.', default='cuda')
 
 

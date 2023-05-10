@@ -1049,7 +1049,7 @@ class Pipeline:
                     weight_border = 2.0,
                     weight_prev = 0.15,
                     weight_background = 0.0,
-                    flow_multiplier = (1.0, 0.75),
+                    flow_multiplier = (0.75, 0.2),
                     use_w_dist = True,
                     plot_progress = True,
                     include_neck = False,
@@ -1087,7 +1087,8 @@ class Pipeline:
                 flow_directions = []
                 previous_flow=None
                 print(f'processing optical flow directions for {N} images')
-                for i, (face, landmarks, w_no_edit, y, p) in tqdm(enumerate(zip(input_face_tensors, landmarks_video, ws_video_default, yaws_video, pitches_video)), total=N):
+                pbar = tqdm(enumerate(zip(input_face_tensors, landmarks_video, ws_video_default, yaws_video, pitches_video)), total=N)
+                for i, (face, landmarks, w_no_edit, y, p) in pbar:
                     ws_inset_no_edit = w_no_edit.detach().clone().unsqueeze(0).to(self.device)
                     reference_face_generated = self.generator.generate(ws_inset_no_edit, original_yaws_video[i], original_pitches_video[i]).clone()
                     # calculate reference inset without edit in order to not disturb the flow by visual attribute changes
@@ -1125,7 +1126,9 @@ class Pipeline:
             edge_size_h = edge_size
             edge_size_w = edge_size
         
-        for i, (frame_image, face, landmarks, w, w_no_edit, y, p) in tqdm(enumerate(zip(input_video_images, input_face_tensors, landmarks_video, ws_video_edit_smoothed, ws_video_default, yaws_video, pitches_video)), total=N):
+        
+        pbar = tqdm(enumerate(zip(input_video_images, input_face_tensors, landmarks_video, ws_video_edit_smoothed, ws_video_default, yaws_video, pitches_video)), total=N)
+        for i, (frame_image, face, landmarks, w, w_no_edit, y, p) in pbar:
             frame = image_to_tensor(frame_image).to(self.device)
             
             ws_inset = w.detach().clone().unsqueeze(0).to(self.device)
@@ -1200,15 +1203,17 @@ class Pipeline:
                 
                 fg_prev = synth_foreground.detach()
         
-                loss_text = f'{i}: {step}/{num_steps} FG: {weight_foreground*loss_foreground.detach().cpu():.3f} BORDER: {loss_border.detach().cpu():.3f} [{loss_border_percept.detach().cpu():.3f} pix {loss_border_pix.detach().cpu():.3f}]'
+                loss_text = f'{i}: {step}/{num_steps} FG: {weight_foreground*loss_foreground.detach().cpu():.3f} BORDER: {loss_border.detach().cpu():.3f} [{loss_border_percept.detach().cpu():.3f} pix {loss_border_pix.detach().cpu():.3f}] '
                 if weight_background > 0: 
                     loss_text+= f' BG: {weight_background*loss_background.detach().cpu():.3f} ' # {weight_border*loss_border.detach().cpu():.4f}
                 if i > 0: 
-                    loss_text += f'PREV: {weight_prev*loss_l1_prev.detach().cpu():.3f} '
+                    loss_text += f'PREV: {weight_prev*loss_l1_prev.detach().cpu():.3f}'
                 loss_text += f' LOSS: {loss.detach().cpu():.3f}'
                 if use_flow: 
                     loss_text += f' FLOW L={np.linalg.norm(flow_directions[i], axis=-1):.2f} [{flow_directions[i][0]:.2f}, {flow_directions[i][1]:.2f}]'
-
+                
+                pbar.set_description(loss_text)
+                
                 if plot_progress and ( step % image_log_step == 0 or step == num_steps-1 ):
                     ws_inset_noedit = w_no_edit.detach().clone().unsqueeze(0).to(self.device)
                     inset_image_no_edit = self.generator.generate(ws_inset_noedit, y, p).clone()
