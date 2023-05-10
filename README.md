@@ -29,7 +29,7 @@ In order to load models trained using `EG3D`, you also need to copy three direct
 We share our VIVE3D pipeline as a Jupyter Notebook (including descriptions) in `VIVE3D_pipeline.ipynb` or as a sequence of python scripts:
 
 
-First, we invert a selected few frames into the latent space of a pretrained EG3D generator. We devised a customized inversion scheme for this purpose. After inversion, we fine-tune the Generator to improve coherence to our target person's appearance.
+First, we invert a selected few frames into the latent space of a pretrained EG3D generator. We devised a customized inversion scheme for this purpose. (After inversion, we fine-tune the Generator to improve coherence to our target person's appearance.
 ```
 # inverts the selected faces into the EG3D latent space and fine-tunes to create personalized Generator
 python personalize_generator.py --source_video path/to/video \

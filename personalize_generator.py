@@ -91,6 +91,7 @@ def _main(source_video,
 
         savepoint_folder = f'{vid.get_video_title()}_{datetime_string}'
         savepoint_path = os.getcwd()+f'/savepoints/{savepoint_folder}'
+        print(f'created new savepoint directory at {savepoint_path}!')
         
     os.makedirs(savepoint_path, exist_ok=True)
 
