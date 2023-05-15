@@ -82,7 +82,7 @@ If you use this code for your research, please cite our paper.
 ```
 
 ## License
-Our code is available under the  TODO license. 
+Our code is available under the CC-BY-NC license. 
 
 ## Acknowledgements
 This project was the product of an internship by Anna Frühstück with Meta Reality Labs Research Sausalito.
