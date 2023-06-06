@@ -67,6 +67,8 @@ python edit_video.py --savepoint_path path/to/savepoints \
 ## Pre-trained Models
 Our code is using a face model trained using the [EG3D code base by NVIDIA](https://github.com/NVlabs/eg3d). You can download the model `ffhqrebalanced512_128.pkl` from [Nvidia](https://github.com/NVlabs/eg3d/blob/main/docs/models.md). Put it into the project directory in the `models` folder.
 
+We also rely on an [implementation of BiSeNet](https://github.com/zllrunning/face-parsing.PyTorch) to obtain a segmentation of the face. Please download their [pretrained model](https://drive.google.com/file/d/154JgKpzCPW82qINcVieuPH3fZ2e0P812) to the folder `pretrained_models` in the project directory.
+
 **Source Videos**
 You can use any source video with sufficiently high resolution as an input- and target-video. 
 
